@@ -59,7 +59,7 @@ def preprocess(
     csv_path:  str = "chess_games.csv",
     out_dir:   str = "data",
     max_games: int = 50_000,
-    min_elo:   int = 2500,
+    min_elo:   int = 2000,
 
 ):
     print(f"Settings → max_games={max_games}, min_elo={min_elo}")

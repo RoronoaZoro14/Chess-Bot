@@ -18,7 +18,62 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, random_split
 from tqdm import tqdm
 
-from chess_cnn_bot import ChessCNN
+#from chess_cnn_bot import ChessCNN
+
+NUM_PLANES = 12  # piece channels
+BOARD_SIZE = 8
+NUM_MOVES = 4096  # 64 * 64
+
+class ResBlock(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(channels, channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(channels, channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(channels),
+        )
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        return self.relu(x + self.net(x))
+
+class ChessCNN(nn.Module):
+    """
+    Architecture
+    ─────────────
+    Input  : (B, 12, 8, 8)
+    Stem   : Conv 3×3 → 128 channels
+    Trunk  : N residual blocks
+    Policy head:
+        Conv 1×1 → 2 channels → flatten → FC → 4096 logits
+    """
+
+    def __init__(self, num_res_blocks: int = 10, channels: int = 128):
+        super().__init__()
+        self.stem = nn.Sequential(
+            nn.Conv2d(NUM_PLANES, channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(channels),
+            nn.ReLU(inplace=True),
+        )
+        self.trunk = nn.Sequential(
+            *[ResBlock(channels) for _ in range(num_res_blocks)]
+        )
+        # Policy head
+        self.policy_conv = nn.Sequential(
+            nn.Conv2d(channels, 2, 1, bias=False),
+            nn.BatchNorm2d(2),
+            nn.ReLU(inplace=True),
+        )
+        self.policy_fc = nn.Linear(2 * BOARD_SIZE * BOARD_SIZE, NUM_MOVES)
+
+    def forward(self, x):
+        x = self.stem(x)
+        x = self.trunk(x)
+        x = self.policy_conv(x)
+        x = x.view(x.size(0), -1)
+        return self.policy_fc(x)  # raw logits (B, 4096)
 
 
 # ── Dataset that reads directly from .npy files ──────────────────────────────
