@@ -34,14 +34,15 @@ The goal is to explore how deep learning and classical search algorithms can be 
 
 ```
 Chess-Bot/
-│── data/                  # Preprocessed datasets (boards, moves)
-│── models/                # CNN architecture & training scripts
-│── preprocess.py          # Converts raw dataset → tensors
-│── train.py               # Model training script
-│── mcts.py                # Monte Carlo Tree Search (optional)
-│── utils.py               # Helper functions
-│── requirements.txt       # Dependencies
-│── README.md              # Project documentation
+│── chess_games.csv/                        # Preprocess dataset for CNN, outputs (boards, moves)
+│── lichess_puzzles.csv                     # Evaluation dataset for CNN & CNN + MCTS for testing on puzzles (Big file not available on Github)
+│── Train_from_preprocessing.py/            # CNN architecture & training scripts for RAW CNN model, outputs chess_cnn.pt
+│── chess_cnn.pt                            # Trained model using RAW CNN
+│── mcts.py                                 # Monte Carlo Tree Search (optional)
+│── Train_form_preprocessing_MCTS.py        # Trains the model with MCTS, outputs chess_cnn_mcts.pt
+│── evaluate.py                             # Evalutes the CNN model based on inputs min_elo and max_games
+│── evaluate_mcts.py                        # Evalutes the CNN model + MCTS based on inputs min_elo and max_games
+│── chess_gui.py                            # A GUI interface to interact with the bot
 ```
 
 ---
@@ -62,9 +63,7 @@ source .venv/bin/activate      # Linux/Mac
 ```
 
 ### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-```
+
 
 ---
 
@@ -77,7 +76,7 @@ pip install -r requirements.txt
 
 Run preprocessing:
 ```bash
-python preprocess.py
+python Preprocessing.py
 ```
 
 ---
@@ -87,7 +86,7 @@ python preprocess.py
 Train the CNN model:
 
 ```bash
-python train.py
+python Train_from_preprocessing.py
 ```
 
 Training includes:
@@ -98,15 +97,14 @@ Training includes:
 
 ---
 
-## 🌲 MCTS Integration (Optional)
+## 🌲 Evaluation
 
-To improve move selection:
-
-- Use CNN for policy prediction
-- Apply MCTS for deeper search
+Evaluate the model:
+ - First download the 'lichess_puzzles.csv' dataset from this link: https://drive.google.com/file/d/11fJAHGgm55gd4C38su5QHHDFO_7HrCTa/view?usp=drive_link
+ - Add it to project folder
 
 ```bash
-python mcts.py
+python evalauate.py
 ```
 
 ---
